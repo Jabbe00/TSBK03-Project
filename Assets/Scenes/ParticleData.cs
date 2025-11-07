@@ -5,6 +5,12 @@ public class ParticleData : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
 
     public Vector3 position;
+    public Vector3 velocity;
+    public Vector3 acceleration;
+    public float mass;
+    public float density;
+    public float pressure;
+    //calculate pressure maybe?
     void Start()
     {
         
