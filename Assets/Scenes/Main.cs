@@ -22,7 +22,7 @@ public class Main : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
         Vector3 totalForce = Vector3.zero;
         float dt = Time.deltaTime;
@@ -58,18 +58,13 @@ public class Main : MonoBehaviour
     {
         float floor = 0.5f;
 
-        // If particle goes below the floor
         if (pos.y < floor)
         {
-            pos.y = floor + 0.0001f; // small offset to prevent re-collision
+            pos.y = floor + 0.0001f;
 
-            // Only reflect if moving downward
             if (velocity.y < 0f)
                 velocity.y = -velocity.y;
         }
-
-        // Add other boundaries here
-        // e.g. walls or ceiling
     }
 
 }
