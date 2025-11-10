@@ -392,9 +392,9 @@ MonoBehaviour:
   width: 10
   height: 10
   depth: 0
-  amount_width: 1
+  amount_width: 10
   amount_height: 10
-  amount_depth: 10
+  amount_depth: 1
   particlePrefab: {fileID: 8226622601093586640, guid: a951aef8990829a4a84bbde24a6f89e7, type: 3}
   particleList: []
 --- !u!4 &1925026639
