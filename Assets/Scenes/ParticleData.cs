@@ -13,7 +13,7 @@ public class ParticleData : MonoBehaviour
     //calculate pressure maybe?
     void Start()
     {
-        
+        position = transform.position;
     }
 
     // Update is called once per frame

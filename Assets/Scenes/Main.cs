@@ -29,7 +29,7 @@ public class Main : MonoBehaviour
         for (int i = 0; i < particleList.Count; i++) 
         {
             totalForce = Vector3.zero;
-            TEMPPARTICLEDATA particle_data = particleList[i].GetComponent<TEMPPARTICLEDATA>();
+            ParticleData particle_data = particleList[i].GetComponent<ParticleData>();
 
             totalForce += GetExternalForces(particle_data);
 
@@ -44,7 +44,7 @@ public class Main : MonoBehaviour
 
     }
 
-    private Vector3 GetExternalForces(TEMPPARTICLEDATA particle_data)
+    private Vector3 GetExternalForces(ParticleData particle_data)
     {
         Vector3 gravityForce = Vector3.zero;
         if (gravity)
