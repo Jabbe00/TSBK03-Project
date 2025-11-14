@@ -2,13 +2,13 @@
 
 public class SmoothingKernels : MonoBehaviour
 {
-    public static float h;
-    public static float h2;   // h^2
-    public static float h3;   // h^3
-    public static float h6;   // h^6
-    public static float h9;   // h^9
+    public float h;
+    public float h2;   // h^2
+    public float h3;   // h^3
+    public float h6;   // h^6
+    public float h9;   // h^9
 
-    public static void SetRadius(float radius)
+    public void SetRadius(float radius)
     {
         h = radius;
         h2 = h * h;
@@ -24,11 +24,11 @@ public class SmoothingKernels : MonoBehaviour
     }
 
     // Kernel constants
-    private static float poly6Constant;
-    private static float spikyConstant;
-    private static float spikyGradConstant;
-    private static float viscConstant;
-    private static float viscLaplacConstant;
+    private float poly6Constant;
+    private float spikyConstant;
+    private float spikyGradConstant;
+    private float viscConstant;
+    private float viscLaplacConstant;
 
     public float W_ploy6(Vector3 r)
     {
@@ -54,16 +54,16 @@ public class SmoothingKernels : MonoBehaviour
         return 0;
     }
 
-    public float gradientW_spiky(Vector3 r)
+    public Vector3 gradientW_spiky(Vector3 r)
     {
         float r2 = r.magnitude;
         //CALCULATED MYSELF; MATCHES FIGURE IN PAPER, BUT FOR ACTUAL DERIVATIVE ADD A MINUS SIGN
-        if(r2 >= 0 && r2 <= h)
+        if(r2 >= 1e-6f && r2 <= h)
         {
             //return (45 / (Mathf.PI * Mathf.Pow(h, 6))) * Mathf.Pow(h - r2, 2);
-            return spikyGradConstant * Mathf.Pow(h - r2, 2);
+            return -spikyGradConstant * Mathf.Pow(h - r2, 2) * r/r2;
         }
-        return 0;
+        return Vector3.zero;
         
     }
 
@@ -78,8 +78,6 @@ public class SmoothingKernels : MonoBehaviour
             return viscConstant *
                 (-(Mathf.Pow(r2, 3f) / (2 * h3)) +
                 (Mathf.Pow(r2, 2f) / h2) + (h / (2 * r2)) - 1);
-
-
         }
         return 0;
     }

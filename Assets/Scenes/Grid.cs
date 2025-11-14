@@ -55,7 +55,16 @@ public class Grid
                     Vector3Int neighborCell = new Vector3Int(cell.x + x, cell.y + y, cell.z + z);
                     if (cells.ContainsKey(neighborCell))
                     {
+
                         neighbours.AddRange(cells[neighborCell]);
+                        /*foreach (var p in cells[neighborCell])
+                        {
+                            // Prevent including itself as a neighbor
+                            if (p != particle)
+                            {
+                                neighbours.Add(p);
+                            }
+                        }*/
                     }
                 }
             }

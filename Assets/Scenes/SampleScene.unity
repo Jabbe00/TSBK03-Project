@@ -148,9 +148,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1fb3431904819f04c99d0490691f574c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Main
-  gravity: 1
+  gravity: 0
   particlePrefab: {fileID: 679563162}
   particleList: []
+  kernels: {fileID: 0}
 --- !u!4 &94154833
 Transform:
   m_ObjectHideFlags: 0
