@@ -148,10 +148,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1fb3431904819f04c99d0490691f574c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Main
-  gravity: 0
+  gravity: 1
   particlePrefab: {fileID: 679563162}
   particleList: []
-  kernels: {fileID: 0}
+  smoothingRadius: 1.5
+  stiffness: 200
+  restDensity: 0.01
+  viscosity: 3.5
+  boxMin: {x: -1, y: 0, z: -1}
+  boxMax: {x: 11, y: 11, z: 1}
+  boundaryDamping: -0.5
 --- !u!4 &94154833
 Transform:
   m_ObjectHideFlags: 0
@@ -392,10 +398,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ParticleSpawner
   width: 10
   height: 10
-  depth: 0
-  amount_width: 10
+  depth: 1
+  amount_width: 15
   amount_height: 10
-  amount_depth: 1
+  amount_depth: 2
   particlePrefab: {fileID: 8226622601093586640, guid: a951aef8990829a4a84bbde24a6f89e7, type: 3}
   particleList: []
 --- !u!4 &1925026639

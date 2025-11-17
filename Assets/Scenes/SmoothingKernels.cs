@@ -1,14 +1,14 @@
 ﻿using UnityEngine;
 
-public class SmoothingKernels : MonoBehaviour
+public static class SmoothingKernels
 {
-    public float h;
-    public float h2;   // h^2
-    public float h3;   // h^3
-    public float h6;   // h^6
-    public float h9;   // h^9
+    public static float h;
+    public static float h2;   // h^2
+    public static float h3;   // h^3
+    public static float h6;   // h^6
+    public static float h9;   // h^9
 
-    public void SetRadius(float radius)
+    public static void SetRadius(float radius)
     {
         h = radius;
         h2 = h * h;
@@ -24,25 +24,33 @@ public class SmoothingKernels : MonoBehaviour
     }
 
     // Kernel constants
-    private float poly6Constant;
-    private float spikyConstant;
-    private float spikyGradConstant;
-    private float viscConstant;
-    private float viscLaplacConstant;
+    private static float poly6Constant;
+    private static float spikyConstant;
+    private static float spikyGradConstant;
+    private static float viscConstant;
+    private static float viscLaplacConstant;
 
-    public float W_ploy6(Vector3 r)
+    public static float W_poly6(Vector3 r)
     {
-        float r2 = r.magnitude;
+        float r2 = r.sqrMagnitude;
         //USE FOR ALL BUT PRESSURE AND VISCOSITY
-        if (r2 >= 0 && r2 <= h)
+        if (r2 >= 0 && r2 <= h2)
         {
             //return 315f / (64f * Mathf.PI * Mathf.Pow(h, 9f)) * Mathf.Pow(h*h - r2*r2, 3f);
-            return poly6Constant * Mathf.Pow(h2 - r2*r2, 3f);
+            return poly6Constant * Mathf.Pow(h2 - r2, 3f);
         }
         return 0;
     }
 
-    public float W_spiky(Vector3 r)
+    public static float W_poly6TEST(Vector3 r)
+    {
+        float r2 = r.sqrMagnitude;
+        float volume = Mathf.PI * Mathf.Pow(h,8) / 4;
+        float value = Mathf.Max(0, h2 - r2 * r2);
+        return value * value * value / volume;
+    }
+
+    public static float W_spiky(Vector3 r)
     {
         float r2 = r.magnitude;
         //USE FOR PRESSURE
@@ -54,20 +62,20 @@ public class SmoothingKernels : MonoBehaviour
         return 0;
     }
 
-    public Vector3 gradientW_spiky(Vector3 r)
+    public static Vector3 gradientW_spiky(Vector3 r)
     {
         float r2 = r.magnitude;
         //CALCULATED MYSELF; MATCHES FIGURE IN PAPER, BUT FOR ACTUAL DERIVATIVE ADD A MINUS SIGN
         if(r2 >= 1e-6f && r2 <= h)
         {
             //return (45 / (Mathf.PI * Mathf.Pow(h, 6))) * Mathf.Pow(h - r2, 2);
-            return -spikyGradConstant * Mathf.Pow(h - r2, 2) * r/r2;
+            return spikyGradConstant * Mathf.Pow(h - r2, 2) * r/r2;
         }
         return Vector3.zero;
         
     }
 
-    public float W_viscosity(Vector3 r)
+    public static float W_viscosity(Vector3 r)
     {
         float r2 = r.magnitude;
         //USE FOR VISCOSITY
@@ -82,14 +90,14 @@ public class SmoothingKernels : MonoBehaviour
         return 0;
     }
 
-    public float laplacianW_viscosity(Vector3 r)
+    public static float laplacianW_viscosity(Vector3 r)
     {
         float r2 = r.magnitude;
         //DIVIDED BY 10 TO MAKE IT MATCH FIGURE IN THE PAPER, MIGHT NOT BE CORRECT
         if (r2 >= 0 && r2 <= h)
         {
             //return ((45 / (Mathf.PI * Mathf.Pow(h, 6))) * (h - r2))/10;
-            return (viscLaplacConstant * (h - r2))/ 10;
+            return (viscLaplacConstant * (h - r2));
         }
         return 0;
     }
