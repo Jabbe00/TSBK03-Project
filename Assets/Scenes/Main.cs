@@ -91,11 +91,11 @@ public class Main : MonoBehaviour
         }
 
 
-        //getParticleValues();
+        getParticleValues();
 
         //Calculate Densisties
-        CalculateDensities();
-        //NewCalculateDensisites();
+        //CalculateDensities();
+        NewCalculateDensisites();
 
         //Calculate forces
         CalculateForces();
@@ -214,11 +214,12 @@ public class Main : MonoBehaviour
             //Debug.Log(neighbours.Count);
             for (int j = 0; j < neighboursIndex.Count; j++)
             {
+                int n = neighboursIndex[j];
                 //Debug.Log((particle_data.position - neighbours[j].position).sqrMagnitude);
-                if ((positions[i] - positions[j]).sqrMagnitude < smoothingRadius * smoothingRadius)
+                if ((positions[i] - positions[n]).sqrMagnitude < smoothingRadius * smoothingRadius)
                 {
-                    pdensity += mass[j] *
-                        SmoothingKernels.W_poly6(positions[i] - positions[j]);
+                    pdensity += mass[n] *
+                        SmoothingKernels.W_poly6(positions[i] - positions[n]);
                 }
             }
             //float k = 200f;
