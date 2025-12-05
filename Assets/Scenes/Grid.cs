@@ -71,5 +71,39 @@ public class Grid
         }
         return neighbours;
     }
+    public List<int> GetNeighboringIndex(Vector3 position)
+    {
+        List<int> index = new List<int>();
+        
+        Vector3Int cell = GetParticleCell(position);
+        for (int x = -1; x <= 1; x++)
+        {
+            for (int y = -1; y <= 1; y++)
+            {
+                for (int z = -1; z <= 1; z++)
+                {
+                    List<ParticleData> neighbours = new List<ParticleData>();
+                    Vector3Int neighborCell = new Vector3Int(cell.x + x, cell.y + y, cell.z + z);
+                    if (cells.ContainsKey(neighborCell))
+                    {
+                        foreach (var p in cells[neighborCell])
+                        {
+                            index.Add(p.index);
+                        }
+                        /*foreach (var p in cells[neighborCell])
+                        {
+                            // Prevent including itself as a neighbor
+                            if (p != particle)
+                            {
+                                neighbours.Add(p);
+                            }
+                        }*/
+                    }
+                }
+            }
+        }
+        
+        return index;
+    }
 
 }

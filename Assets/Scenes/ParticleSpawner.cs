@@ -49,6 +49,7 @@ public class ParticleSpawner : MonoBehaviour
                 {
                     pos = CalculatePosition(x, y, z);
                     GameObject particle = Instantiate(particlePrefab, pos, Quaternion.identity);
+                    particle.GetComponent<ParticleData>().index = particleList.Count;
                     particleList.Add(particle);
                 }
             }

@@ -65,7 +65,7 @@ public static class SmoothingKernels
     public static Vector3 gradientW_spiky(Vector3 r)
     {
         float r2 = r.magnitude;
-        //CALCULATED MYSELF; MATCHES FIGURE IN PAPER, BUT FOR ACTUAL DERIVATIVE ADD A MINUS SIGN
+
         if(r2 >= 1e-6f && r2 <= h)
         {
             //return (45 / (Mathf.PI * Mathf.Pow(h, 6))) * Mathf.Pow(h - r2, 2);
@@ -93,7 +93,6 @@ public static class SmoothingKernels
     public static float laplacianW_viscosity(Vector3 r)
     {
         float r2 = r.magnitude;
-        //DIVIDED BY 10 TO MAKE IT MATCH FIGURE IN THE PAPER, MIGHT NOT BE CORRECT
         if (r2 >= 0 && r2 <= h)
         {
             //return ((45 / (Mathf.PI * Mathf.Pow(h, 6))) * (h - r2))/10;

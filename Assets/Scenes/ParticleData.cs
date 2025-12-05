@@ -10,6 +10,7 @@ public class ParticleData : MonoBehaviour
     public float mass;
     public float density;
     public float pressure;
+    public int index;
     //calculate pressure maybe?
     void Start()
     {

@@ -26,7 +26,13 @@ public class Main : MonoBehaviour
     public Vector3 boxMax = new Vector3(10f, 10f, 1f);
     public float boundaryDamping = -0.5f;
 
+
+    private Vector3[] positions;
+    private Vector3[] velocities;
     private Vector3[] forces;
+    private float[] density;
+    private float[] pressure;
+    private float[] mass;
 
     private int numParticles;
     
@@ -48,8 +54,28 @@ public class Main : MonoBehaviour
         }
 
         forces = new Vector3[particleList.Count];
+        positions = new Vector3[particleList.Count];
+        velocities = new Vector3[particleList.Count];
+        pressure = new float[particleList.Count];
+        density = new float[particleList.Count];
+        mass = new float[particleList.Count];
+
+        getParticleValues();
         //kernels = new SmoothingKernels();
         SmoothingKernels.SetRadius(smoothingRadius);
+    }
+
+    private void getParticleValues()
+    {
+        for (int i = 0; i < particleList.Count; i++)
+        {
+            ParticleData particle_data = particleList[i].GetComponent<ParticleData>();
+            positions[i] = particle_data.position;
+            velocities[i] = particle_data.velocity;
+            //pressure[i] = particle_data.pressure;
+            //density[i] = particle_data.density;
+            mass[i] = particle_data.mass;
+        }
     }
 
     // Update is called once per frame
@@ -65,8 +91,11 @@ public class Main : MonoBehaviour
         }
 
 
+        //getParticleValues();
+
         //Calculate Densisties
         CalculateDensities();
+        //NewCalculateDensisites();
 
         //Calculate forces
         CalculateForces();
@@ -141,7 +170,7 @@ public class Main : MonoBehaviour
             }
             //float k = 200f;
             //float density_0 = 0.03f;
-            Debug.Log(density);
+            //Debug.Log(density);
             particle_data.density = density;
             particle_data.pressure = stiffness * Mathf.Max(0, (particle_data.density - restDensity));
 
@@ -175,6 +204,41 @@ public class Main : MonoBehaviour
 
     }
 
+    private void NewCalculateDensisites()
+    {
+        Parallel.For(0, numParticles, i =>
+        {
+            float pdensity = 0f;
+            //ParticleData particle_data = particleList[i].GetComponent<ParticleData>();
+            List<int> neighboursIndex = grid.GetNeighboringIndex(positions[i]);
+            //Debug.Log(neighbours.Count);
+            for (int j = 0; j < neighboursIndex.Count; j++)
+            {
+                //Debug.Log((particle_data.position - neighbours[j].position).sqrMagnitude);
+                if ((positions[i] - positions[j]).sqrMagnitude < smoothingRadius * smoothingRadius)
+                {
+                    pdensity += mass[j] *
+                        SmoothingKernels.W_poly6(positions[i] - positions[j]);
+                }
+            }
+            //float k = 200f;
+            //float density_0 = 0.03f;
+            //Debug.Log(density);
+            density[i] = pdensity;
+            pressure[i] = stiffness * Mathf.Max(0, (density[i] - restDensity));
+        });
+
+        for (int i = 0; i < particleList.Count; i++)
+        {
+            ParticleData particle_data = particleList[i].GetComponent<ParticleData>();
+
+            //positions[i] = particle_data.position;
+
+            particle_data.density = density[i];
+            particle_data.pressure = pressure[i];
+        }
+
+    }
     private void CalculateForces()
     {
         
