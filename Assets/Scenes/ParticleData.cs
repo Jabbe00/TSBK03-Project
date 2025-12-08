@@ -17,9 +17,14 @@ public class ParticleData : MonoBehaviour
         position = transform.position;
     }
 
+    private void Awake()
+    {
+        position = transform.position;
+    }
+
     // Update is called once per frame
     void Update()
     {
-        gameObject.transform.position = position;
+        //gameObject.transform.position = position;
     }
 }

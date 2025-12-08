@@ -155,7 +155,7 @@ MonoBehaviour:
   stiffness: 150
   restDensity: 0.01
   viscosity: 3
-  boxMin: {x: -1, y: 0, z: -1}
+  boxMin: {x: -1, y: 0, z: -2}
   boxMax: {x: 11, y: 11, z: 1}
   boundaryDamping: -0.5
 --- !u!4 &94154833
@@ -399,9 +399,9 @@ MonoBehaviour:
   width: 5
   height: 5
   depth: 1
-  amount_width: 15
-  amount_height: 10
-  amount_depth: 1
+  amount_width: 20
+  amount_height: 15
+  amount_depth: 3
   particlePrefab: {fileID: 8226622601093586640, guid: a951aef8990829a4a84bbde24a6f89e7, type: 3}
   particleList: []
 --- !u!4 &1925026639

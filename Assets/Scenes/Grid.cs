@@ -7,12 +7,14 @@ public class Grid
     //storlek på varje cell i gridet och en hashmap för att lagra cellerna och deras partiklar
     public float cellSize;
     private Dictionary<Vector3Int, List<ParticleData>> cells;
+    private Dictionary<Vector3Int, List<int>> cells2;
 
     //konstruktor som initierar cellstorleken och cellordboken
     public Grid(float cellSize)
     {
         this.cellSize = cellSize;
         cells = new Dictionary<Vector3Int, List<ParticleData>>();
+        cells2 = new Dictionary<Vector3Int, List<int>>();
     }
 
     //ger vilken cell baserat på partikelns position
@@ -28,6 +30,7 @@ public class Grid
     public void Clear()
     {
         cells.Clear();
+        cells2.Clear();
     }
 
     //lägg till en partikel i rätt cell och om cellen inte finns gör den
@@ -71,7 +74,8 @@ public class Grid
         }
         return neighbours;
     }
-    public List<int> GetNeighboringIndex(Vector3 position)
+    
+    public List<int> OLDGetNeighboringIndex(Vector3 position)
     {
         List<int> index = new List<int>();
         
@@ -102,8 +106,52 @@ public class Grid
                 }
             }
         }
+        if (index.Count == 0)
+        {
+            Debug.Log("COULDNT FIND ANY NEIGHBOUR");
+        }
         
         return index;
     }
+
+    public void AddParticle(int index, Vector3 pos)
+    {
+        Vector3Int cell = GetParticleCell(pos);
+        if (!cells2.TryGetValue(cell, out List<int> list))
+        {
+            list = new List<int>();
+            cells2[cell] = list;
+        }
+        list.Add(index);
+    }
+
+    // Returns list of particle indices in the neighboring 3x3x3 cells
+    public List<int> GetNeighboringIndex(Vector3 pos)
+    {
+        List<int> idx = new List<int>();
+        Vector3Int cell = GetParticleCell(pos);
+        for (int x = -1; x <= 1; x++)
+        {
+            for (int y = -1; y <= 1; y++)
+            {
+                for (int z = -1; z <= 1; z++)
+                {
+                    Vector3Int neighborCell = new Vector3Int(cell.x + x, cell.y + y, cell.z + z);
+                    if (cells2.TryGetValue(neighborCell, out List<int> list))
+                    {
+                        idx.AddRange(list);
+                    }
+                }
+            }
+        }
+
+        if (idx.Count == 0)
+        {
+            Debug.LogWarning($"Grid: no neighbors found for position {pos}");
+        }
+
+        return idx;
+    }
+
 
 }

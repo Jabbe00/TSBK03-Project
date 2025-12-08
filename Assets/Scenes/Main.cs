@@ -17,6 +17,7 @@ public class Main : MonoBehaviour
 
     public float smoothingRadius = 3;
 
+
     public float stiffness = 100f;
     public float restDensity = 100f;
     public float viscosity = 3.5f;
@@ -74,6 +75,8 @@ public class Main : MonoBehaviour
             velocities[i] = particle_data.velocity;
             //pressure[i] = particle_data.pressure;
             //density[i] = particle_data.density;
+            pressure[i] = 0f;
+            density[i] = restDensity;
             mass[i] = particle_data.mass;
         }
     }
@@ -87,21 +90,23 @@ public class Main : MonoBehaviour
         grid.Clear();
         for (int i = 0; i < particleList.Count; i++)
         {
-            grid.AddParticle(particleList[i].GetComponent<ParticleData>());
+            //grid.AddParticle(particleList[i].GetComponent<ParticleData>());
+            grid.AddParticle(i,positions[i]);
         }
 
 
-        getParticleValues();
+        //getParticleValues();
 
         //Calculate Densisties
         //CalculateDensities();
         NewCalculateDensisites();
 
         //Calculate forces
-        CalculateForces();
+        //CalculateForces();
+        NewCalculateForces();
 
         //Perform Integration
-        for (int i = 0; i < particleList.Count; i++)
+        /*for (int i = 0; i < particleList.Count; i++)
         {
             ParticleData particle_data = particleList[i].GetComponent<ParticleData>();
             Vector3 acceleration = forces[i] / particle_data.density;
@@ -146,7 +151,71 @@ public class Main : MonoBehaviour
             particle_data.position = p;
             particle_data.velocity = v;
         }
+        */
+        //PARALELL INTEGRATION
+        
+        Parallel.For(0, numParticles, i =>
+        {
+            Vector3 acceleration = Vector3.zero;
+            acceleration = forces[i] / density[i];
+            velocities[i] += acceleration * dt;
 
+            positions[i] += velocities[i] * dt;
+            if(i == 0)
+            {
+                Debug.Log("Force: " + forces[i]);
+                Debug.Log("ACC: " + acceleration[i]);
+                Debug.Log("VEL: " + velocities[i]);
+            }
+            //ResolveCollision(ref particle_data.position, ref particle_data.velocity);
+
+            Vector3 p = positions[i];
+            Vector3 v = velocities[i];
+
+            if (p.x < boxMin.x)
+            {
+                p.x = boxMin.x + 0.001f;
+                v.x *= boundaryDamping;
+            }
+            if (p.x > boxMax.x)
+            {
+                p.x = boxMax.x - 0.001f;
+                v.x *= boundaryDamping;
+            }
+            if (p.y < boxMin.y)
+            {
+                p.y = boxMin.y + 0.001f;
+                v.y *= boundaryDamping;
+            }
+            if (p.y > boxMax.y)
+            {
+                p.y = boxMax.y - 0.001f;
+                v.y *= boundaryDamping;
+            }
+            if (p.z < boxMin.z)
+            {
+                p.z = boxMin.z + 0.001f;
+                v.z *= boundaryDamping;
+            }
+            if (p.z > boxMax.z)
+            {
+                p.z = boxMax.z - 0.001f;
+                v.z *= boundaryDamping;
+            }
+            positions[i] = p;
+            velocities[i] = v;
+        });
+        
+        for (int i = 0; i < particleList.Count; i++)
+        {
+            particleList[i].transform.position = positions[i];
+
+            ParticleData data = particleList[i].GetComponent<ParticleData>();
+            data.position = positions[i];
+            data.velocity = velocities[i];
+            data.density = density[i];
+            data.pressure = pressure[i];  
+        }
     }
 
     private void CalculateDensities()
@@ -223,8 +292,8 @@ public class Main : MonoBehaviour
                 }
             }
             //float k = 200f;
-            //float density_0 = 0.03f;
-            //Debug.Log(density);
+            //float density_0 = 0.03f;'
+            //Debug.Log("DENSITY:" + pdensity);
             density[i] = pdensity;
             pressure[i] = stiffness * Mathf.Max(0, (density[i] - restDensity));
         });
@@ -279,6 +348,40 @@ public class Main : MonoBehaviour
 
 
         }
+    }
+
+    private void NewCalculateForces()
+    {
+
+        Parallel.For(0, numParticles, i =>
+        {
+            forces[i] = Vector3.zero;
+            List<int> neighboursIndex = grid.GetNeighboringIndex(positions[i]);
+
+            for (int j = 0; j < neighboursIndex.Count; j++)
+            {
+                int n = neighboursIndex[j];
+                if (i == n) continue;
+                //Debug.Log((particle_data.position - neighbours[j].position).magnitude);
+                if ((positions[i] - positions[n]).magnitude < smoothingRadius)
+                {
+                    //PUCH APART
+                    forces[i] += -mass[n] *
+                        (pressure[i] + pressure[n]) / (2 * density[n]) *
+                        SmoothingKernels.gradientW_spiky(positions[i] - positions[n]);
+
+                    forces[i] += viscosity * mass[n] * (velocities[n] - velocities[i])
+                        * SmoothingKernels.laplacianW_viscosity(positions[i] - positions[n]);
+                }
+                else continue;
+            }
+            //forces[i] += GetExternalForces(particle_data);
+            //GRAVITY FORCE
+            if (gravity)
+            {
+                forces[i] += new Vector3(0, -density[i] * 10f, 0);
+            }
+        });
     }
 
     private Vector3 GetExternalForces(ParticleData particle_data)
