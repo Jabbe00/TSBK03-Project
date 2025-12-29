@@ -45,6 +45,7 @@ public class Grid
     }
 
     //kolla grannceller för att hitta närliggande partiklar
+    //Gammal, används inte längre
     public List<ParticleData> GetNeighboringParticles(ParticleData particle)
     {
         List<ParticleData> neighbours = new List<ParticleData>();
@@ -125,7 +126,8 @@ public class Grid
         list.Add(index);
     }
 
-    // Returns list of particle indices in the neighboring 3x3x3 cells
+    //Returnerar en lista av index för närliggande partiklar
+
     public List<int> GetNeighboringIndex(Vector3 pos)
     {
         List<int> idx = new List<int>();

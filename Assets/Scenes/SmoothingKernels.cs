@@ -16,6 +16,7 @@ public static class SmoothingKernels
         h6 = h3 * h3;
         h9 = h6 * h3;
 
+        //Constants
         poly6Constant = 315f / (64f * Mathf.PI * h9);
         spikyConstant = 15f / (Mathf.PI * h6);
         spikyGradConstant = -45f / (Mathf.PI * h6);
@@ -30,10 +31,10 @@ public static class SmoothingKernels
     private static float viscConstant;
     private static float viscLaplacConstant;
 
+    //Used in density calculations
     public static float W_poly6(Vector3 r)
     {
         float r2 = r.sqrMagnitude;
-        //USE FOR ALL BUT PRESSURE AND VISCOSITY
         if (r2 >= 0 && r2 <= h2)
         {
             //return 315f / (64f * Mathf.PI * Mathf.Pow(h, 9f)) * Mathf.Pow(h*h - r2*r2, 3f);
@@ -42,26 +43,20 @@ public static class SmoothingKernels
         return 0;
     }
 
-    public static float W_poly6TEST(Vector3 r)
-    {
-        float r2 = r.sqrMagnitude;
-        float volume = Mathf.PI * Mathf.Pow(h,8) / 4;
-        float value = Mathf.Max(0, h2 - r2 * r2);
-        return value * value * value / volume;
-    }
-
-    public static float W_spiky(Vector3 r)
+    //Not used, but is base function for the gradient gradientW_spiky
+    public static Vector3 W_spiky(Vector3 r)
     {
         float r2 = r.magnitude;
         //USE FOR PRESSURE
-        if (r2 >= 0 && r2 <= h)
+        if (r2 >= 1e-6f && r2 <= h)
         {
             //return 15f / (Mathf.PI * Mathf.Pow(h, 6f)) * Mathf.Pow(h - r2,3f);
-            return spikyConstant * Mathf.Pow(h - r2, 3f);
+            return spikyConstant * Mathf.Pow(h - r2, 3f) * r / r2;
         }
-        return 0;
+        return Vector3.zero;
     }
 
+    //Used in pressure force calculation
     public static Vector3 gradientW_spiky(Vector3 r)
     {
         float r2 = r.magnitude;
@@ -75,6 +70,7 @@ public static class SmoothingKernels
         
     }
 
+    //Not used, but is base function for the laplacian laplacianW_viscosity
     public static float W_viscosity(Vector3 r)
     {
         float r2 = r.magnitude;
@@ -82,7 +78,6 @@ public static class SmoothingKernels
         if (r2 >= 0 && r2 <= h)
         {
             //return 15f / (2f * Mathf.PI * Mathf.Pow(h, 3f)) *(-(Mathf.Pow(r2, 3f) / (2 * Mathf.Pow(h, 3f))) +(Mathf.Pow(r2, 2f) / Mathf.Pow(h, 2f)) + (h / (2 * r2)) - 1);
-
             return viscConstant *
                 (-(Mathf.Pow(r2, 3f) / (2 * h3)) +
                 (Mathf.Pow(r2, 2f) / h2) + (h / (2 * r2)) - 1);
@@ -90,6 +85,7 @@ public static class SmoothingKernels
         return 0;
     }
 
+    //Used in viscosity calculations
     public static float laplacianW_viscosity(Vector3 r)
     {
         float r2 = r.magnitude;

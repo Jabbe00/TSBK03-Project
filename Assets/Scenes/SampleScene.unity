@@ -151,13 +151,14 @@ MonoBehaviour:
   gravity: 1
   particlePrefab: {fileID: 679563162}
   particleList: []
-  smoothingRadius: 1.5
-  stiffness: 150
+  smoothingRadius: 1.1
+  k_stiffness: 100
   restDensity: 0.01
   viscosity: 3
-  boxMin: {x: -1, y: 0, z: -2}
-  boxMax: {x: 11, y: 11, z: 1}
-  boundaryDamping: -0.5
+  jitters: 0.1
+  boxMin: {x: -1, y: -3, z: -2}
+  boxMax: {x: 14, y: 11, z: 1}
+  boundaryDamping: -0.2
 --- !u!4 &94154833
 Transform:
   m_ObjectHideFlags: 0
@@ -269,7 +270,7 @@ Transform:
   m_GameObject: {fileID: 705507993}
   serializedVersion: 2
   m_LocalRotation: {x: 0.40821788, y: -0.23456968, z: 0.10938163, w: 0.8754261}
-  m_LocalPosition: {x: 0, y: 3, z: 0}
+  m_LocalPosition: {x: -67.13, y: 3, z: -38.76}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -399,9 +400,9 @@ MonoBehaviour:
   width: 5
   height: 5
   depth: 1
-  amount_width: 20
-  amount_height: 15
-  amount_depth: 3
+  amount_width: 21
+  amount_height: 20
+  amount_depth: 4
   particlePrefab: {fileID: 8226622601093586640, guid: a951aef8990829a4a84bbde24a6f89e7, type: 3}
   particleList: []
 --- !u!4 &1925026639

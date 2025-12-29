@@ -18,9 +18,10 @@ public class Main : MonoBehaviour
     public float smoothingRadius = 3;
 
 
-    public float stiffness = 100f;
+    public float k_stiffness = 100f;
     public float restDensity = 100f;
     public float viscosity = 3.5f;
+    public float jitters = 0.005f;
 
 
     public Vector3 boxMin = new Vector3(-10f, 0f, -1f);
@@ -90,85 +91,34 @@ public class Main : MonoBehaviour
         grid.Clear();
         for (int i = 0; i < particleList.Count; i++)
         {
-            //grid.AddParticle(particleList[i].GetComponent<ParticleData>());
             grid.AddParticle(i,positions[i]);
         }
 
-
-        //getParticleValues();
-
         //Calculate Densisties
-        //CalculateDensities();
         NewCalculateDensisites();
 
         //Calculate forces
-        //CalculateForces();
         NewCalculateForces();
 
-        //Perform Integration
-        /*for (int i = 0; i < particleList.Count; i++)
-        {
-            ParticleData particle_data = particleList[i].GetComponent<ParticleData>();
-            Vector3 acceleration = forces[i] / particle_data.density;
-            particle_data.velocity += acceleration * dt;
-
-            particle_data.position += particle_data.velocity * dt;
-            //ResolveCollision(ref particle_data.position, ref particle_data.velocity);
-
-            Vector3 p = particle_data.position;
-            Vector3 v = particle_data.velocity;
-
-            if (p.x < boxMin.x)
-            {
-                p.x = boxMin.x + 0.001f;
-                v.x *= boundaryDamping;
-            }
-            if (p.x > boxMax.x)
-            {
-                p.x = boxMax.x - 0.001f;
-                v.x *= boundaryDamping;
-            }
-            if (p.y < boxMin.y)
-            {
-                p.y = boxMin.y + 0.001f;
-                v.y *= boundaryDamping;
-            }
-            if (p.y > boxMax.y)
-            {
-                p.y = boxMax.y - 0.001f;
-                v.y *= boundaryDamping;
-            }
-            if (p.z < boxMin.z)
-            {
-                p.z = boxMin.z + 0.001f;
-                v.z *= boundaryDamping;
-            }
-            if (p.z > boxMax.z)
-            {
-                p.z = boxMax.z - 0.001f;
-                v.z *= boundaryDamping;
-            }
-            particle_data.position = p;
-            particle_data.velocity = v;
-        }
-        */
-        //PARALELL INTEGRATION
         
+        
+        //Adding some jitter forces to make sure particles dont get stuck on each other
+        for (int i = 0; i < particleList.Count; i++)
+        {
+            Vector3 jitter = Random.insideUnitSphere * jitters;
+            forces[i] += jitter;
+        }
+        
+        //Parallel integration calculations
         Parallel.For(0, numParticles, i =>
         {
             Vector3 acceleration = Vector3.zero;
             acceleration = forces[i] / density[i];
             velocities[i] += acceleration * dt;
-
             positions[i] += velocities[i] * dt;
-            if(i == 0)
-            {
-                Debug.Log("Force: " + forces[i]);
-                Debug.Log("ACC: " + acceleration[i]);
-                Debug.Log("VEL: " + velocities[i]);
-            }
-            //ResolveCollision(ref particle_data.position, ref particle_data.velocity);
 
+
+            //Collision with walls calculation
             Vector3 p = positions[i];
             Vector3 v = velocities[i];
 
@@ -206,18 +156,23 @@ public class Main : MonoBehaviour
             velocities[i] = v;
         });
         
+        //Update particle position
         for (int i = 0; i < particleList.Count; i++)
         {
             particleList[i].transform.position = positions[i];
 
+            //Update particle data for debugging
+            
             ParticleData data = particleList[i].GetComponent<ParticleData>();
             data.position = positions[i];
             data.velocity = velocities[i];
             data.density = density[i];
             data.pressure = pressure[i];  
+            
         }
     }
 
+    //Old density calculation that does not work in parallell
     private void CalculateDensities()
     {
         
@@ -241,74 +196,38 @@ public class Main : MonoBehaviour
             //float density_0 = 0.03f;
             //Debug.Log(density);
             particle_data.density = density;
-            particle_data.pressure = stiffness * Mathf.Max(0, (particle_data.density - restDensity));
+            particle_data.pressure = k_stiffness * Mathf.Max(0, (particle_data.density - restDensity));
 
         }
-
-        //CURRENTLY DOES NOT WORK, NEED TO TAKE ALL GetComponent OUT OF Parallel
-        /*
-        Parallel.For(0, numParticles, i =>
-        {
-            float density = 0f;
-            ParticleData particle_data = particleList[i].GetComponent<ParticleData>();
-            List<ParticleData> neighbours = grid.GetNeighboringParticles(particle_data);
-            //Debug.Log(neighbours.Count);
-            for (int j = 0; j < neighbours.Count; j++)
-            {
-                //Debug.Log((particle_data.position - neighbours[j].position).sqrMagnitude);
-                if ((particle_data.position - neighbours[j].position).sqrMagnitude < smoothingRadius * smoothingRadius)
-                {
-                    density += neighbours[j].mass *
-                        SmoothingKernels.W_poly6(particle_data.position - neighbours[j].position);
-                }
-
-            }
-            //float k = 200f;
-            //float density_0 = 0.03f;
-            //Debug.Log(density);
-            particle_data.density = density;
-            particle_data.pressure = stiffness * Mathf.Max(0, (particle_data.density - restDensity));
-        });*/
-
-
     }
 
+    //New density calculation that works in paralell
     private void NewCalculateDensisites()
     {
+        //Parallel function runs code in parallel on cpu
         Parallel.For(0, numParticles, i =>
         {
             float pdensity = 0f;
-            //ParticleData particle_data = particleList[i].GetComponent<ParticleData>();
+            //Gets all neighboring particles indexes
             List<int> neighboursIndex = grid.GetNeighboringIndex(positions[i]);
-            //Debug.Log(neighbours.Count);
             for (int j = 0; j < neighboursIndex.Count; j++)
             {
                 int n = neighboursIndex[j];
-                //Debug.Log((particle_data.position - neighbours[j].position).sqrMagnitude);
                 if ((positions[i] - positions[n]).sqrMagnitude < smoothingRadius * smoothingRadius)
                 {
+                    //Perform the density calculation using smoothing kernel
                     pdensity += mass[n] *
                         SmoothingKernels.W_poly6(positions[i] - positions[n]);
                 }
             }
-            //float k = 200f;
-            //float density_0 = 0.03f;'
-            //Debug.Log("DENSITY:" + pdensity);
             density[i] = pdensity;
-            pressure[i] = stiffness * Mathf.Max(0, (density[i] - restDensity));
-        });
-
-        for (int i = 0; i < particleList.Count; i++)
-        {
-            ParticleData particle_data = particleList[i].GetComponent<ParticleData>();
-
-            //positions[i] = particle_data.position;
-
-            particle_data.density = density[i];
-            particle_data.pressure = pressure[i];
-        }
+            //Perform the pressure calculation using the k stiffnes term
+            pressure[i] = k_stiffness * Mathf.Max(0, (density[i] - restDensity));
+        });  
 
     }
+
+    //Old force calculation that does not work in parallel
     private void CalculateForces()
     {
         
@@ -352,38 +271,38 @@ public class Main : MonoBehaviour
 
     private void NewCalculateForces()
     {
-
+        //Parallel function runs code in parallel on cpu
         Parallel.For(0, numParticles, i =>
         {
             forces[i] = Vector3.zero;
+            //Gets all neighboring particles indexes
             List<int> neighboursIndex = grid.GetNeighboringIndex(positions[i]);
-
             for (int j = 0; j < neighboursIndex.Count; j++)
             {
                 int n = neighboursIndex[j];
+                //Skip if neighbour is itself
                 if (i == n) continue;
-                //Debug.Log((particle_data.position - neighbours[j].position).magnitude);
                 if ((positions[i] - positions[n]).magnitude < smoothingRadius)
                 {
-                    //PUCH APART
+                    //Pressure force calculation with smoothing kernel
                     forces[i] += -mass[n] *
                         (pressure[i] + pressure[n]) / (2 * density[n]) *
                         SmoothingKernels.gradientW_spiky(positions[i] - positions[n]);
 
+                    //Viscosity Force calculation with smoothing kernel
                     forces[i] += viscosity * mass[n] * (velocities[n] - velocities[i])
                         * SmoothingKernels.laplacianW_viscosity(positions[i] - positions[n]);
                 }
                 else continue;
             }
-            //forces[i] += GetExternalForces(particle_data);
-            //GRAVITY FORCE
-            if (gravity)
+            if (gravity) //Gravity force calculation
             {
                 forces[i] += new Vector3(0, -density[i] * 10f, 0);
             }
         });
     }
 
+    //Old not used anymore
     private Vector3 GetExternalForces(ParticleData particle_data)
     {
         Vector3 gravityForce = Vector3.zero;
@@ -392,47 +311,6 @@ public class Main : MonoBehaviour
             gravityForce = new Vector3(0,-particle_data.density * 10f,0);
         }
         return gravityForce;
-    }
-
-    private void ResolveCollision(ref Vector3 pos, ref Vector3 velocity)
-    {
-        float floor = 0.5f;
-
-        float roof = 11f;
-        float right = 11f;
-        float left = -1f;
-        float damping = -1f;
-
-        if (pos.y < floor)
-        {
-            pos.y = floor + 0.0001f;
-
-           
-            velocity.y *=damping;
-        }
-        if (pos.y > roof)
-        {
-            pos.y = roof - 0.0001f;
-
-           
-            velocity.y *= damping;
-        }
-        
-        if (pos.x > right)
-        {
-            pos.x = right - 0.0001f;
-
-            
-            velocity.x *= damping;
-        }
-        if (pos.x < left)
-        {
-            pos.x = left + 0.0001f;
-
-
-            velocity.x *= damping;
-        }
-
     }
     void OnDrawGizmosSelected()
     {

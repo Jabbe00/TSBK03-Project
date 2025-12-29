@@ -26,18 +26,13 @@ public class ParticleSpawner : MonoBehaviour
         Instance = this;
     }
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        //SpawnParticles();
-    }
-
     // Update is called once per frame
     void Update()
     {
         
     }
 
+    //Spawns particles in a 3D grid
     public void SpawnParticles()
     {
         Vector3 pos = Vector3.zero;
@@ -56,6 +51,7 @@ public class ParticleSpawner : MonoBehaviour
         }
     }
 
+    //Calculates position for new particle
     private Vector3 CalculatePosition(int x, int y, int z)
     {
         float offset_width = width/amount_width * x;
