@@ -1,8 +1,15 @@
+//////////////////////////////////
+//Authors:                      //
+//  Jesper Larsson - jesla966   //
+//  Simon Jonsson - simjo788    //
+//////////////////////////////////
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Unity.VisualScripting;
 using UnityEngine;
+
+
 
 public class Main : MonoBehaviour
 {

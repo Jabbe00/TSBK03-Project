@@ -1,3 +1,8 @@
+//////////////////////////////////
+//Authors:                      //
+//  Jesper Larsson - jesla966   //
+//  Simon Jonsson - simjo788    //
+//////////////////////////////////
 using UnityEngine;
 
 public class ParticleData : MonoBehaviour
